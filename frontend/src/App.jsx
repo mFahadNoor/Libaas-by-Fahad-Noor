@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import AdminLayout from "./components/admin/AdminLayout";
@@ -20,23 +15,48 @@ import Analytics from "./components/admin/Analytics";
 //   console.log(response);
 // }
 
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Login />, // Default route
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <Register />,
+  },
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      {
+        index: true, // Default child route for /admin
+        element: <Dashboard />,
+      },
+      {
+        path: "products",
+        element: <ProductManagement />,
+      },
+      {
+        path: "orders",
+        element: <OrderManagement />,
+      },
+      {
+        path: "analytics",
+        element: <Analytics />,
+      },
+    ],
+  },
+]);
+
 function App() {
   return (
-    <Router>
-      <div className="bg-gray-100 min-h-screen min-w-screen flex items-center justify-center">
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="products" element={<ProductManagement />} />
-            <Route path="orders" element={<OrderManagement />} />
-            <Route path="analytics" element={<Analytics />} />
-          </Route>
-        </Routes>
-      </div>
-    </Router>
+    <RouterProvider router={router}>
+      <div className="bg-gray-100 min-h-screen min-w-screen flex items-center justify-center"></div>
+    </RouterProvider>
   );
 }
 
