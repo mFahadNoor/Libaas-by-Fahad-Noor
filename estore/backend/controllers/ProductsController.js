@@ -23,6 +23,27 @@ exports.getProducts = async (req, res) => {
   }
 };
 
+// Get a product by ID
+exports.getProductById = async (req, res) => {
+  try {
+    const { id } = req.params; // Extract the product ID from the route parameters
+
+    // Fetch the product by ID from the database
+    const product = await Product.findById(id);
+
+    // If the product does not exist, return a 404 error
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Return the product as a JSON response
+    res.status(200).json(product);
+  } catch (err) {
+    // Handle errors (e.g., invalid ID format)
+    res.status(500).json({ error: 'Error fetching product by ID', details: err });
+  }
+};
+
 
 // Add a new product (if required)
 exports.addProducts = async (req, res) => {
