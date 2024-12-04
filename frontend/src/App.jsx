@@ -1,5 +1,6 @@
-import React from "react";
+import { React } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import AdminLayout from "./components/admin/AdminLayout";
@@ -7,7 +8,11 @@ import Dashboard from "./components/admin/Dashboard";
 import ProductManagement from "./components/admin/ProductManagement";
 import OrderManagement from "./components/admin/OrderManagement";
 import Analytics from "./components/admin/Analytics";
-
+import NotFound from "./components/ErrorPages/NotFound";
+import Unauthorized from "./components/ErrorPages/Unauthorized";
+import PrivateRoute from "./components/PrivateRoute";
+import Temp from "./Temp";
+import RedirectIfLoggedIn from "./components/RedirectIfLoggedIn";
 // //Backend call
 // async function getResponse(params) {
 //   const apiUrl = `http://localhost:5000/`;
@@ -18,37 +23,86 @@ import Analytics from "./components/admin/Analytics";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Login />, // Default route
+    element: (
+      <AuthProvider>
+        <RedirectIfLoggedIn>
+          <Login />
+        </RedirectIfLoggedIn>
+      </AuthProvider>
+    ),
   },
   {
     path: "/login",
-    element: <Login />,
+
+    element: (
+      <AuthProvider>
+        <RedirectIfLoggedIn>
+          <Login />
+        </RedirectIfLoggedIn>
+      </AuthProvider>
+    ),
   },
   {
     path: "/register",
-    element: <Register />,
+    element: (
+      <AuthProvider>
+        <RedirectIfLoggedIn>
+          <Register />
+        </RedirectIfLoggedIn>
+      </AuthProvider>
+    ),
   },
   {
     path: "/admin",
-    element: <AdminLayout />,
+    element: (
+      <AuthProvider>
+        <PrivateRoute allowedRoles={["ADMIN"]}>
+          <AdminLayout />
+        </PrivateRoute>
+      </AuthProvider>
+    ),
     children: [
-      {
-        index: true, // Default child route for /admin
-        element: <Dashboard />,
-      },
-      {
-        path: "products",
-        element: <ProductManagement />,
-      },
-      {
-        path: "orders",
-        element: <OrderManagement />,
-      },
-      {
-        path: "analytics",
-        element: <Analytics />,
-      },
+      { index: true, element: <Dashboard /> },
+      { path: "products", element: <ProductManagement /> },
+      { path: "orders", element: <OrderManagement /> },
+      { path: "analytics", element: <Analytics /> },
     ],
+  },
+  {
+    path: "/seller",
+    element: (
+      <AuthProvider>
+        <PrivateRoute allowedRoles={["SELLER"]}>
+          <Temp />
+        </PrivateRoute>
+      </AuthProvider>
+    ),
+  },
+  {
+    path: "/customer",
+    element: (
+      <AuthProvider>
+        <PrivateRoute>
+          <Temp />
+        </PrivateRoute>
+      </AuthProvider>
+    ),
+  },
+  {
+    path: "/temp",
+    element: <Temp />,
+  },
+  {
+    path: "/unauthorized",
+    element: (
+      <AuthProvider>
+        <Unauthorized />
+      </AuthProvider>
+    ),
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ]);
 
@@ -57,6 +111,7 @@ function App() {
     <RouterProvider router={router}>
       <div className="bg-gray-100 min-h-screen min-w-screen flex items-center justify-center"></div>
     </RouterProvider>
+    // TODO: on log out, localStorage.removeItem('user');
   );
 }
 

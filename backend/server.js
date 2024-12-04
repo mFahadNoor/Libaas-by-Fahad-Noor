@@ -17,7 +17,9 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+const cartRoutes = require("./routes/cartRoutes");
 app.use("/api/auth", authRoutes);
+app.use("/api/cart", cartRoutes);
 
 // Error Handler
 app.use(errorHandler);

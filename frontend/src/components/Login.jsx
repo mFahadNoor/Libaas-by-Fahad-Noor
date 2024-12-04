@@ -1,20 +1,31 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 const logo = require("../images/logo.png");
 
 function Login() {
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-
-  const handleSubmit = (e) => {
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-  };
+    setError("");
+    setLoading(true);
 
+    const result = await login(formData);
+
+    if (!result.success) {
+      setError(result.error);
+    }
+
+    setLoading(false);
+  };
   return (
     <div className="min-h-screen min-w-full flex">
       {/* Left Side - Image with Greeting */}
@@ -50,6 +61,11 @@ function Login() {
               Please enter your details to sign in
             </p>
           </div>
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -101,9 +117,12 @@ function Login() {
 
             <button
               type="submit"
-              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition duration-200"
+              disabled={loading}
+              className={`w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition duration-200 ${
+                loading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 

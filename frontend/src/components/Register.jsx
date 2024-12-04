@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 const logo = require("../images/logo.png");
 
 function Register() {
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -12,10 +14,41 @@ function Register() {
     role: "customer",
   });
   const [role, setRole] = useState("customer");
-
-  const handleSubmit = (e) => {
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle registration logic here
+    setError("");
+    setLoading(true);
+
+    try {
+      // Form validation
+      if (!formData.fullName.trim()) {
+        setError("Full name is required.");
+        setLoading(false);
+        return;
+      }
+      if (!formData.email.trim()) {
+        setError("Email is required.");
+        setLoading(false);
+        return;
+      }
+      if (formData.password.length < 6) {
+        setError("Password must be at least 6 characters long.");
+        setLoading(false);
+        return;
+      }
+
+      const result = await register(formData);
+
+      if (!result.success) {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -52,7 +85,11 @@ function Register() {
               Join us for an exclusive shopping experience
             </p>
           </div>
-
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
@@ -133,9 +170,12 @@ function Register() {
 
             <button
               type="submit"
-              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition duration-200"
+              disabled={loading}
+              className={`w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition duration-200 ${
+                loading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
