@@ -9,11 +9,21 @@ npm -v
 ```
 cd /path/to/your/project
 ```
-3. **Install dependencies**: This project requires 'concurrent' and 'node_modules'. To install dependencies, run:
+3. **Install dependencies**: This project requires some dependencies. To install these, run:
 ```
 npm install concurrently --save-dev
+npm install chart.js react-chartjs-2 express-async-handler bcryptjs jsonwebtoken
 ```
-4. **Start**: Run the project:
+4. **Configure .env**: Create a `.env` file and place it in same place as `.env.example`. Then enter port, mongo uri and secret key 
+5. **Start**: Run the project:
 ```
 npm start
+```
+To run only backend:
+```
+npm run server
+```
+To run only frontend
+```
+npm run client
 ```

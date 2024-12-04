@@ -1,14 +1,25 @@
 import React from "react";
+import { Line } from "react-chartjs-2";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
   Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+  Legend,
+} from "chart.js";
 
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 function Analytics() {
   const data = [
     { month: "Jan", sales: 4000 },
@@ -19,6 +30,31 @@ function Analytics() {
     { month: "Jun", sales: 5500 },
   ];
 
+  const chartData = {
+    labels: data.map((item) => item.month),
+    datasets: [
+      {
+        label: "Monthly Sales",
+        data: data.map((item) => item.sales),
+        fill: false,
+        backgroundColor: "rgb(75, 192, 192)",
+        borderColor: "rgba(75, 192, 192, 0.2)",
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "Monthly Sales Chart",
+      },
+    },
+  };
   return (
     <div>
       <h1 className="text-3xl font-bold mb-8">Sales Reports & Analytics</h1>
@@ -27,20 +63,7 @@ function Analytics() {
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <h2 className="text-xl font-bold mb-4">Monthly Sales Overview</h2>
           <div className="h-80">
-            {/* <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="sales" fill="#000000" />
-              </BarChart>
-            </ResponsiveContainer> */}
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data}>
-                <Bar dataKey="sales" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
+            <Line data={chartData} options={options} />
           </div>
         </div>
 
@@ -65,5 +88,4 @@ function Analytics() {
     </div>
   );
 }
-
 export default Analytics;
