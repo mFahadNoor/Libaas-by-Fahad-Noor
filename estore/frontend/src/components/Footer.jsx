@@ -6,7 +6,7 @@ function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-lg font-bold mb-4">About LUXE</h3>
+            <h3 className="text-lg font-bold mb-4">About LIBAS</h3>
             <p className="text-gray-600">
               Discover the latest in fashion with our curated collection of contemporary clothing and accessories.
             </p>
@@ -40,7 +40,7 @@ function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t text-center text-gray-600">
-          <p>&copy; {new Date().getFullYear()} LUXE. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} LIBAS. All rights reserved.</p>
         </div>
       </div>
     </footer>

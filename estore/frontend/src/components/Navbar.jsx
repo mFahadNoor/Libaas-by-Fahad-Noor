@@ -1,106 +1,139 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Heart, Search, Menu, X } from 'lucide-react';
 
-function Navbar({ onGenderChange }) {
+function Navbar({ onSearch }) {
+  const [isSearchVisible, setIsSearchVisible] = useState(false); // State to track search bar visibility
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(''); // state to hold the search term
+  const [searchResults, setSearchResults] = useState([]); // state to hold search results
 
-  const handleGenderClick = (gender) => {
-    onGenderChange(gender);
-    setIsMenuOpen(false);
+  const searchRef = useRef(null); // Reference to the search bar dropdown
+
+  const toggleSearchBar = () => {
+    setIsSearchVisible(!isSearchVisible); // Toggle visibility of search bar
   };
 
+  const handleSearchChange = async (event) => {
+    const query = event.target.value;
+    setSearchTerm(query); // update search term in the state
+
+    if (!query.trim()) {
+      setSearchResults([]); // Clear results if the query is empty
+      return;
+    }
+
+    try {
+      // Make API request to fetch search results (assuming API exists)
+      const response = await fetch(`http://localhost:5000/api/search/term/${query}`);
+      if (!response.ok) throw new Error('Failed to fetch search results');
+      const data = await response.json();
+      setSearchResults(data.products || []); // Update state with search results
+    } catch (error) {
+      console.error(error);
+      setSearchResults([]); // Clear results on error
+    }
+
+    onSearch(query); // Pass the search term to the parent component
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchResults([]); // Close dropdown
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('mousedown', handleClickOutside);
+
+    // Clean up event listener on component unmount
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <nav className="bg-gray-950 text-white shadow-sm">
+    <nav className="bg-black text-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center space-x-2">
-            {/* <h1 className="text-2xl font-bold">Libas</h1> */}
-            {/* <img src="https://i.pinimg.com/736x/8a/b9/a8/8ab9a8a245f91107931f487e8ebc058e.jpg" alt="Logo" className="h-12 w-12 aspect-[1/1] object-cover" /> */}
-            <h2 className="text-l font-bold mt-0.5">by Fahad Noor</h2>
+            <h2 className="text-l font-bold mt-0.5">LIBAS by Fahad Noor</h2>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <button
-              onClick={() => handleGenderClick('all')}
-              className="text-white hover:text-gray-500"
-            >
-              All
-            </button>
-            <button
-              onClick={() => handleGenderClick('female')}
-              className="text-white hover:text-gray-500"
-            >
-              Women
-            </button>
-            <button
-              onClick={() => handleGenderClick('male')}
-              className="text-white hover:text-gray-500"
-            >
-              Men
-            </button>
-            <button
-              onClick={() => handleGenderClick('unisex')}
-              className="text-white hover:text-gray-500"
-            >
-              Unisex
-            </button>
-          </div>
+          <div className='flex flex-row'>
+            {/* Search Bar - Only shows when isSearchVisible is true */}
+            {isSearchVisible && (
+              <div className="relative" ref={searchRef}>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={handleSearchChange} // Trigger the search change
+                  placeholder="Search..."
+                  className="rounded-3xl w-[300px] h-8 px-4 mx-6 text-black focus:outline-none"
+                />
 
-          {/* Icons */}
-          <div className="hidden md:flex items-center space-x-6">
-            <button className="text-white hover:text-gray-500">
-              <Search size={20} />
-            </button>
-            <button className="text-white hover:text-gray-500">
-              <Heart size={20} />
-            </button>
-            <button className="text-white hover:text-gray-500">
-              <ShoppingBag size={20} />
-            </button>
-          </div>
+                {/* Dropdown for search results */}
+                {searchResults.length > 0 && (
+                  <div className="absolute bg-white shadow-lg rounded-md mt-2 w-full max-h-64 overflow-y-auto z-10">
+                    {searchResults.map((product) => (
+                      <div
+                        key={product.id}
+                        className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setSearchTerm(product.name); // Set the search term to selected product name
+                          setSearchResults([]); // Clear search results
+                          onSearch(product.name); // Pass selected product name to parent for catalog update
+                        }}
+                      >
+                        <img
+                          src={product.image} // Assuming image URL is present in product object
+                          alt={product.name}
+                          className="w-10 h-10 object-cover rounded-md mr-3"
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-black">{product.name}</p>
+                          <p className="text-xs text-gray-600">${product.price}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-white hover:text-gray-500"
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            {/* Icons */}
+            <div className="hidden md:flex items-center space-x-6">
+              <button className="text-white hover:text-gray-500" onClick={toggleSearchBar}>
+                <Search size={20} />
+              </button>
+              <button className="text-white hover:text-gray-500">
+                <Heart size={20} />
+              </button>
+              <button className="text-white hover:text-gray-500">
+                <ShoppingBag size={20} />
+              </button>
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Mobile menu button */}
+      <div className="md:hidden">
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="text-white hover:text-gray-500"
+        >
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            <button
-              onClick={() => handleGenderClick('all')}
-              className="block w-full text-left px-3 py-2 text-gray-700 hover:text-black"
-            >
-              All
-            </button>
-            <button
-              onClick={() => handleGenderClick('female')}
-              className="block w-full text-left px-3 py-2 text-gray-700 hover:text-black"
-            >
-              Women
-            </button>
-            <button
-              onClick={() => handleGenderClick('male')}
-              className="block w-full text-left px-3 py-2 text-gray-700 hover:text-black"
-            >
-              Men
-            </button>
-            <button
-              onClick={() => handleGenderClick('unisex')}
-              className="block w-full text-left px-3 py-2 text-gray-700 hover:text-black"
-            >
-              Unisex
-            </button>
+            {/* Gender Filter Removed */}
           </div>
         </div>
       )}

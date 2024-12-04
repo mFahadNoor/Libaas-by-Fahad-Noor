@@ -5,6 +5,11 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const productRoutes = require('./routes/productRoutes.js');
+const searchHistoryRoutes = require('./Routes/searchRoutes.js');
+const authRoutes = require('./Routes/authRoutes.js');
+const wishlistRoutes = require('./Routes/wishlistRoute.js');
+
+// Use search history routes
 
 const app = express();
 app.use(cors());
@@ -22,6 +27,9 @@ mongoose.connect(MONGODB_URI, {
 
 // API routes
 app.use('/api/products', productRoutes);
+app.use('/api/search', searchHistoryRoutes);
+app.use('/api/auth', authRoutes);
+app.use ('/api/wishlist', wishlistRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;

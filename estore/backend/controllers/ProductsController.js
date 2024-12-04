@@ -1,11 +1,8 @@
 // controllers/ProductsController.js
 const Product = require('../models/Products.js'); // Assuming Product is your Mongoose model
-
-// Get all products, with optional filtering by category
-// Get all products, with optional filtering by category and gender
 exports.getProducts = async (req, res) => {
   try {
-    const { category, gender } = req.query; // Get category and gender from the query string
+    const { category, gender, brand, name } = req.query; // Get category and gender from the query string
 
     // Build the query object dynamically
     const query = {};
@@ -14,6 +11,12 @@ exports.getProducts = async (req, res) => {
     }
     if (gender && gender !== 'all') {
       query.gender = gender; // Add gender filter if provided
+    }
+    if (brand && brand !== 'all') {
+      query.brand = brand; // Add brand filter if provided
+    }
+    if (name) {
+      query.name = { $regex: name, $options: 'i' }; // Case-insensitive regex search for product name
     }
 
     const products = await Product.find(query); // Query products based on the built query object
