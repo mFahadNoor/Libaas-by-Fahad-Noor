@@ -6,7 +6,7 @@ import axios from 'axios';
 const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
   const handleAddToWishlist = async () => {
     // Dummy user ID for testing (replace with actual user ID in production)
-    const userId = '6750a1d30ec156af32047712'; 
+    const userId = '6751b855ec4025be11ec0d48'; 
   
     try {
       const response = await axios.post('/api/wishlist/add', {

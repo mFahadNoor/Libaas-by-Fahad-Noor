@@ -1,5 +1,5 @@
 // controllers/ProductsController.js
-const Product = require('../models/Products.js'); // Assuming Product is your Mongoose model
+const Product = require('../models/productModel.js'); // Assuming Product is your Mongoose model
 exports.getProducts = async (req, res) => {
   try {
     const { category, gender, brand, name } = req.query; // Get category and gender from the query string

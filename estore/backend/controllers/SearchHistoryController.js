@@ -1,6 +1,6 @@
 // controllers/searchHistoryController.js
 const SearchHistory = require('../models/SearchHistory');
-const Product = require('../models/Products.js');
+const Product = require('../models/productModel.js');
 
 // Save Search and Return Matching Products
 

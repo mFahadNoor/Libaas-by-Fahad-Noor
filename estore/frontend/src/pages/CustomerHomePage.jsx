@@ -14,7 +14,7 @@ function CustomerHomePage() {
 
   const [wishlist, setWishlist] = useState([]); // State to hold wishlist
 
-  // Fetch products based on filters
+  // Fetch products based on filters  
   useEffect(() => {
     const fetchProducts = async () => {
       const categoryQuery = selectedCategory === 'all' ? '' : `category=${selectedCategory}`;
@@ -23,7 +23,7 @@ function CustomerHomePage() {
       const searchQuery = searchTerm ? `name=${searchTerm}` : '';
 
       const query = [categoryQuery, genderQuery, brandQuery, searchQuery].filter(Boolean).join('&');
-      const apiUrl = `http://localhost:5000/api/products${query ? `?${query}` : ''}`;
+      const apiUrl = `http://localhost:5000/api/products/customer${query ? `?${query}` : ''}`;
 
       try {
         const response = await fetch(apiUrl);

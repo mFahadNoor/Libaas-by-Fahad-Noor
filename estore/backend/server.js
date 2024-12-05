@@ -8,6 +8,8 @@ const productRoutes = require('./routes/productRoutes.js');
 const searchHistoryRoutes = require('./Routes/searchRoutes.js');
 const authRoutes = require('./Routes/authRoutes.js');
 const wishlistRoutes = require('./Routes/wishlistRoute.js');
+const authMiddleware = require('./Routes/authRoutes.js');
+const cart  = require('./Routes/cartRoutes.js');
 
 // Use search history routes
 
