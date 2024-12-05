@@ -1,29 +1,25 @@
-import React from "react";
-
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 function OrderManagement() {
-  const orders = [
-    {
-      id: "#12345",
-      customer: "John Doe",
-      date: "2024-03-15",
-      status: "Processing",
-      total: "$245.00",
-    },
-    {
-      id: "#12346",
-      customer: "Jane Smith",
-      date: "2024-03-14",
-      status: "Shipped",
-      total: "$189.00",
-    },
-    {
-      id: "#12347",
-      customer: "Mike Johnson",
-      date: "2024-03-14",
-      status: "Delivered",
-      total: "$325.00",
-    },
-  ];
+  const [orders, setOrders] = useState([]);
+
+  // Function to fetch orders
+  const fetchOrders = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/orders", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("user.token")}`, // Make sure the token is stored in localStorage or state
+        },
+      });
+      setOrders(response.data);
+    } catch (error) {
+      console.error("Error fetching orders", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {

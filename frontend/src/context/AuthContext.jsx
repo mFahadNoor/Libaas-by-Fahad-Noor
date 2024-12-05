@@ -10,7 +10,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  console.log("IN AUTHT", user);
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
