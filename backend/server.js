@@ -4,7 +4,6 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const errorHandler = require("./middleware/errorMiddleware");
-const authRoutes = require("./routes/authRoutes");
 
 dotenv.config({ path: "../.env" }); // Explicitly load .env file
 // Connect to MongoDB
@@ -17,9 +16,13 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-const cartRoutes = require("./routes/cartRoutes");
-app.use("/api/auth", authRoutes);
-app.use("/api/cart", cartRoutes);
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/cart", require("./routes/cartRoutes"));
+app.use("/api/products", require("./routes/productRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/wishlist", require("./routes/wishlistRoutes"));
+app.use("/api/adminDashboard", require("./routes/adminDashboardRoutes"));
+app.use("/api/adminAnalytics", require("./routes/adminAnalyticsRoutes"));
 
 // Error Handler
 app.use(errorHandler);

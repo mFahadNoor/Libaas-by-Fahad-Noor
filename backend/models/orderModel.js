@@ -35,5 +35,11 @@ const orderSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
+// Virtual field to calculate total order price
+orderSchema.virtual("total").get(function () {
+  return this.orderItems.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
+});
 module.exports = mongoose.model("Order", orderSchema);
