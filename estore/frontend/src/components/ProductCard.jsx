@@ -2,41 +2,54 @@ import React from 'react';
 import { Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import {jwtDecode} from 'jwt-decode'; // Ensure correct import for jwt-decode
 
 const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
   const handleAddToWishlist = async () => {
-    // Dummy user ID for testing (replace with actual user ID in production)
-    const userId = '6751b855ec4025be11ec0d48'; 
-  
+    let userId = '6751b855ec4025be11ec0d48'; // Dummy user ID for testing
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        userId = String(decoded.user.id); // Convert to string using String()
+        console.log(`Decoded User ID: ${userId}`);
+        console.log(`Decoded User Name: ${decoded.user.name}`);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        return; // Exit if token decoding fails
+      }
+    }
+
     try {
       const response = await axios.post('/api/wishlist/add', {
-        user: userId,
+        user: userId, // Send the stringified userId
         productId: product.id,
       });
-  
+
       if (response.data.success) {
+        console.log("Product added to wishlist!");
       } else {
+        console.error("Failed to add product to wishlist:", response.data.message);
       }
     } catch (error) {
+      console.error("Error adding to wishlist:", error);
     }
-  
-    // Call the function passed down from the parent (if needed)
+
     if (onAddToWishlist) {
-      onAddToWishlist(product.id); // Call this only if needed and not for alert purpose
+      onAddToWishlist(product.id); // Call parent handler if provided
     }
   };
-  
 
   const handleAddToCart = () => {
     if (onAddToCart) {
-      onAddToCart(product.id); // Call the function passed down from the parent to add to cart
+      onAddToCart(product.id); // Call parent handler if provided
     }
   };
 
   return (
     <div className="group relative">
       <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
-        {/* Wrap the image with Link component */}
         <Link to={`/products/${product.id}`}>
           <img
             src={product.image}
@@ -44,7 +57,7 @@ const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
             className="h-full w-full object-cover object-center group-hover:opacity-75 transition"
           />
         </Link>
-        <button 
+        <button
           className="absolute top-4 right-4 p-2 rounded-full bg-white/80 hover:bg-white transition"
           onClick={handleAddToWishlist}
         >
@@ -57,7 +70,6 @@ const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
         <p className="mt-1 text-gray-600">${product.price.toFixed(2)}</p>
       </div>
 
-      {/* Add to Cart and View Details Buttons */}
       <div className="mt-4 flex flex-col">
         <button
           onClick={handleAddToCart}
@@ -66,7 +78,7 @@ const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
           Add to Cart
         </button>
         <Link
-          to={`/products/${product.id}`} // Assuming the product details page is under "/product/:id"
+          to={`/products/${product.id}`}
           className="text-center bg-gray-300 text-black py-2 px-4 rounded-md h-10 hover:bg-gray-400 transition"
         >
           View Details

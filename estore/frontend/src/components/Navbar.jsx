@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Heart, Search, Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom'; // Import Link
 
 function Navbar({ onSearch }) {
   const [isSearchVisible, setIsSearchVisible] = useState(false); // State to track search bar visibility
@@ -62,7 +63,7 @@ function Navbar({ onSearch }) {
             <h2 className="text-l font-bold mt-0.5">LIBAS by Fahad Noor</h2>
           </div>
 
-          <div className='flex flex-row'>
+          <div className="flex flex-row">
             {/* Search Bar - Only shows when isSearchVisible is true */}
             {isSearchVisible && (
               <div className="relative" ref={searchRef}>
@@ -108,15 +109,25 @@ function Navbar({ onSearch }) {
               <button className="text-white hover:text-gray-500" onClick={toggleSearchBar}>
                 <Search size={20} />
               </button>
-              <button className="text-white hover:text-gray-500">
+              <Link to="/wishlist" className="text-white hover:text-gray-500"> {/* Navigate to Wishlist */}
                 <Heart size={20} />
-              </button>
+              </Link>
               <button className="text-white hover:text-gray-500">
                 <ShoppingBag size={20} />
               </button>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Mobile menu button */}
+      <div className="md:hidden">
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="text-white hover:text-gray-500"
+        >
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
       {/* Mobile menu button */}
