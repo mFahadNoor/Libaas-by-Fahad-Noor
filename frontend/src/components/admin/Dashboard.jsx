@@ -23,6 +23,7 @@ function Dashboard() {
           },
         }
       );
+      console.log("This shit", response.data);
       setStats(response.data);
     } catch (error) {
       console.error("Error fetching dashboard stats", error);
@@ -45,7 +46,7 @@ function Dashboard() {
             </div>
           </div>
           <h3 className="text-gray-600 text-sm mb-1">Total Sales</h3>
-          <p className="text-2xl font-bold">${stats.totalSales}</p>
+          <p className="text-2xl font-bold">${stats.totalSales.toFixed(3)}</p>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-sm">

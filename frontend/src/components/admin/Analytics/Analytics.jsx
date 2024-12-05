@@ -12,11 +12,11 @@ import {
   ArcElement,
 } from "chart.js";
 import axios from "axios";
-import MetricsCards from "./Analytics/MetricsCards";
-import SalesChart from "./Analytics/SalesChart";
-import CategoryDistribution from "./Analytics/CategoryDistribution";
-import OrderStatusChart from "./Analytics/OrderStatusChart";
-import OrdersPerDay from "./Analytics/OrdersPerDay";
+import MetricsCards from './MetricsCards';
+import SalesChart from './SalesChart';
+import CategoryDistribution from './CategoryDistribution';
+import OrderStatusChart from './OrderStatusChart';
+import OrdersPerDay from './OrdersPerDay';
 
 ChartJS.register(
   CategoryScale,
@@ -69,9 +69,7 @@ function Analytics() {
   }, [period]);
 
   if (loading || !analyticsData) {
-    return (
-      <div className="flex justify-center items-center h-96">Loading...</div>
-    );
+    return <div className="flex justify-center items-center h-96">Loading...</div>;
   }
 
   return (
@@ -92,9 +90,7 @@ function Analytics() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <SalesChart salesData={analyticsData.salesData} />
-        <CategoryDistribution
-          categoryData={analyticsData.metrics.categoryDistribution}
-        />
+        <CategoryDistribution categoryData={analyticsData.metrics.categoryDistribution} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

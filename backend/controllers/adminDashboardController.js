@@ -5,7 +5,6 @@ const getAdminDashboardStats = async (req, res) => {
   try {
     // Total Sales (sum of delivered orders)
     const totalSales = await Order.aggregate([
-      { $match: { status: "DELIVERED" } },
       { $unwind: "$orderItems" },
       {
         $lookup: {

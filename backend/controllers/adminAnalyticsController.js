@@ -12,10 +12,23 @@ const getSalesAnalytics = asyncHandler(async (req, res) => {
   const currentDate = new Date();
   const startDate = new Date();
 
+  // Adjust date range based on period
   if (period === "monthly") {
     startDate.setMonth(startDate.getMonth() - 6);
   } else if (period === "weekly") {
-    startDate.setDate(startDate.getDate() - 28);
+    startDate.setDate(startDate.getDate() - 28); // Last 4 weeks
+  }
+
+  // Generate date array for the selected period
+  const dateArray = [];
+  const tempDate = new Date(startDate);
+  while (tempDate <= currentDate) {
+    dateArray.push(new Date(tempDate));
+    if (period === "monthly") {
+      tempDate.setMonth(tempDate.getMonth() + 1);
+    } else {
+      tempDate.setDate(tempDate.getDate() + 1);
+    }
   }
 
   const salesData = await Order.aggregate([
@@ -59,9 +72,29 @@ const getSalesAnalytics = asyncHandler(async (req, res) => {
     },
   ]);
 
+  // Fill in missing dates with zero values
+  const formattedSalesData = dateArray.map((date) => {
+    const dateStr =
+      period === "monthly"
+        ? date.toISOString().substring(0, 7)
+        : date.toISOString().substring(0, 10);
+
+    const existingData = salesData.find((item) => item._id === dateStr);
+
+    return (
+      existingData || {
+        _id: dateStr,
+        sales: 0,
+        orders: [],
+        products: 0,
+      }
+    );
+  });
+
   // Calculate key metrics
   const totalOrders = await Order.countDocuments({
     createdAt: { $gte: startDate, $lte: currentDate },
+    status: { $ne: "CANCELLED" },
   });
 
   const totalCustomers = await User.countDocuments({
@@ -137,7 +170,7 @@ const getSalesAnalytics = asyncHandler(async (req, res) => {
   ]);
 
   res.json({
-    salesData,
+    salesData: formattedSalesData,
     metrics: {
       totalOrders,
       totalCustomers,
