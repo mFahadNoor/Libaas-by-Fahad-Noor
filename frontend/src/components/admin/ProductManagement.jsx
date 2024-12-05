@@ -87,9 +87,6 @@ function ProductManagement() {
         return;
       }
 
-      // Log the selectedProduct for debugging
-      console.log("Selected Product:", selectedProduct);
-
       // Send the updated product data directly
       await axios.put(
         `http://localhost:5000/api/products/${selectedProduct._id}`,

@@ -1,5 +1,5 @@
-const asyncHandler = require('express-async-handler');
-const Order = require('../models/orderModel');
+const asyncHandler = require("express-async-handler");
+const Order = require("../models/orderModel");
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -9,12 +9,12 @@ const createOrder = asyncHandler(async (req, res) => {
 
   if (!orderItems || orderItems.length === 0) {
     res.status(400);
-    throw new Error('No order items');
+    throw new Error("No order items");
   }
 
   const order = await Order.create({
     user: req.user._id,
-    orderItems
+    orderItems,
   });
 
   res.status(201).json(order);
@@ -24,8 +24,16 @@ const createOrder = asyncHandler(async (req, res) => {
 // @route   GET /api/orders
 // @access  Private
 const getMyOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ user: req.user._id })
-    .populate('orderItems.product');
+  const orders = await Order.find({ user: req.user._id }).populate(
+    "orderItems.product"
+  );
+  res.json(orders);
+});
+
+const getAllOrders = asyncHandler(async (req, res) => {
+  const orders = await Order.find()
+    .populate("orderItems.product") // Populate product details for each order item
+    .populate("user");
   res.json(orders);
 });
 
@@ -33,18 +41,22 @@ const getMyOrders = asyncHandler(async (req, res) => {
 // @route   GET /api/orders/:id
 // @access  Private
 const getOrderById = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id)
-    .populate('orderItems.product');
+  const order = await Order.findById(req.params.id).populate(
+    "orderItems.product"
+  );
 
   if (!order) {
     res.status(404);
-    throw new Error('Order not found');
+    throw new Error("Order not found");
   }
 
   // Check if order belongs to user or user is admin
-  if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'ADMIN') {
+  if (
+    order.user.toString() !== req.user._id.toString() &&
+    req.user.role !== "ADMIN"
+  ) {
     res.status(403);
-    throw new Error('Not authorized');
+    throw new Error("Not authorized");
   }
 
   res.json(order);
@@ -59,7 +71,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 
   if (!order) {
     res.status(404);
-    throw new Error('Order not found');
+    throw new Error("Order not found");
   }
 
   order.status = status;
@@ -71,5 +83,6 @@ module.exports = {
   createOrder,
   getMyOrders,
   getOrderById,
-  updateOrderStatus
+  updateOrderStatus,
+  getAllOrders,
 };

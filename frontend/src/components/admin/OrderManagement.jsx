@@ -1,17 +1,35 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+
 function OrderManagement() {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [sortOption, setSortOption] = useState("");
+
+  const calculateTotal = (orderItems) => {
+    return orderItems.reduce(
+      (sum, item) => sum + item.product.price * item.quantity,
+      0
+    );
+  };
 
   // Function to fetch orders
   const fetchOrders = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/orders", {
+      const token = JSON.parse(localStorage.getItem("user"))?.token;
+
+      if (!token) {
+        console.error("No token found in localStorage");
+        return;
+      }
+      const response = await axios.get("http://localhost:5000/api/orders/all", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("user.token")}`, // Make sure the token is stored in localStorage or state
+          Authorization: `Bearer ${token}`,
         },
       });
       setOrders(response.data);
+      setFilteredOrders(response.data);
     } catch (error) {
       console.error("Error fetching orders", error);
     }
@@ -21,14 +39,58 @@ function OrderManagement() {
     fetchOrders();
   }, []);
 
+  // Handle Status Filter
+  const handleStatusFilterChange = (e) => {
+    const value = e.target.value;
+    setStatusFilter(value);
+
+    // Filter orders based on selected status
+    if (value === "") {
+      setFilteredOrders(orders); // Show all orders
+    } else {
+      setFilteredOrders(orders.filter((order) => order.status === value));
+    }
+  };
+
+  // Handle Sorting
+  const handleSortChange = (e) => {
+    const value = e.target.value;
+    setSortOption(value);
+
+    let sortedOrders = [...filteredOrders];
+
+    if (value === "dateAsc") {
+      sortedOrders.sort(
+        (a, b) => new Date(a.placementDate) - new Date(b.placementDate)
+      );
+    } else if (value === "dateDesc") {
+      sortedOrders.sort(
+        (a, b) => new Date(b.placementDate) - new Date(a.placementDate)
+      );
+    } else if (value === "totalAsc") {
+      sortedOrders.sort(
+        (a, b) => calculateTotal(a.orderItems) - calculateTotal(b.orderItems)
+      );
+    } else if (value === "totalDesc") {
+      sortedOrders.sort(
+        (a, b) => calculateTotal(b.orderItems) - calculateTotal(a.orderItems)
+      );
+    }
+
+    setFilteredOrders(sortedOrders);
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
-      case "Processing":
+      case "PENDING":
+      case "PROCESSING":
         return "bg-yellow-100 text-yellow-800";
-      case "Shipped":
+      case "SHIPPED":
         return "bg-blue-100 text-blue-800";
-      case "Delivered":
+      case "DELIVERED":
         return "bg-green-100 text-green-800";
+      case "CANCELLED":
+        return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -38,6 +100,37 @@ function OrderManagement() {
     <div>
       <h1 className="text-3xl font-bold mb-8">Order Management</h1>
 
+      {/* Filters */}
+      <div className="mb-4 flex space-x-4">
+        {/* Status Filter */}
+        <select
+          value={statusFilter}
+          onChange={handleStatusFilterChange}
+          className="border rounded-lg px-4 py-2"
+        >
+          <option value="">Filter Status</option>
+          <option value="PENDING">Pending</option>
+          <option value="PROCESSING">Processing</option>
+          <option value="SHIPPED">Shipped</option>
+          <option value="DELIVERED">Delivered</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+
+        {/* Sorting Options */}
+        <select
+          value={sortOption}
+          onChange={handleSortChange}
+          className="border rounded-lg px-4 py-2"
+        >
+          <option value="">Sort By</option>
+          <option value="dateAsc">Date (Oldest First)</option>
+          <option value="dateDesc">Date (Newest First)</option>
+          <option value="totalAsc">Total (Lowest First)</option>
+          <option value="totalDesc">Total (Highest First)</option>
+        </select>
+      </div>
+
+      {/* Orders Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50">
@@ -57,22 +150,19 @@ function OrderManagement() {
               <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
                 Total
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
-                Actions
-              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {orders.map((order) => (
+            {filteredOrders.map((order) => (
               <tr key={order.id}>
                 <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                  {order.id}
+                  {order._id}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
-                  {order.customer}
+                  {order.user ? order.user.name : "Unknown User"}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
-                  {order.date}
+                  {new Date(order.placementDate).toLocaleString()}
                 </td>
                 <td className="px-6 py-4 text-sm">
                   <span
@@ -84,12 +174,7 @@ function OrderManagement() {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900">
-                  {order.total}
-                </td>
-                <td className="px-6 py-4 text-sm">
-                  <button className="text-black hover:underline">
-                    View Details
-                  </button>
+                  ${calculateTotal(order.orderItems).toFixed(2)}
                 </td>
               </tr>
             ))}

@@ -5,11 +5,12 @@ const {
   getMyOrders,
   getOrderById,
   updateOrderStatus,
+  getAllOrders,
 } = require("../controllers/orderController");
 const { protect, authorize } = require("../middleware/authMiddleware");
 
 router.route("/").post(protect, createOrder).get(protect, getMyOrders);
-
+router.route("/all").get(protect, authorize("ADMIN"), getAllOrders);
 router.route("/:id").get(protect, getOrderById);
 
 router
