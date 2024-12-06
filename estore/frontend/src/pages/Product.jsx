@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom'; // Import useParams for extracting
 import Navbar from '../components/Navbar'; // Ensure the correct import path for Navbar
 import Newsletter from '../components/Newsletter'; // Ensure the correct import path for Newsletter
 import Footer from '../components/Footer'; // Ensure the correct import path for Footer
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 function Product() {
   const { productId } = useParams(); // Extract the product ID from the URL
@@ -26,6 +28,31 @@ function Product() {
   // Define handleSearch if you need search functionality
   const handleSearch = (query) => {
     console.log(query); // Handle the search logic here
+  };
+
+  // Function to add product to cart
+  const addToCart = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('User not logged in');
+      }
+
+      // Decode the token to get the user ID
+      const decoded = jwtDecode(token);
+      const userId = decoded.user.id;
+
+      // Send the product ID and user ID to the backend
+      const response = await axios.post('http://localhost:5000/api/cart/add', {
+        user: userId,
+        productId: productId,
+        quantity: 1, // Default quantity to 1
+      });
+
+      console.log(response.data.message); // Log success message
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+    }
   };
 
   React.useEffect(() => {
@@ -76,7 +103,10 @@ function Product() {
             </div>
 
             {/* Add to Cart Button */}
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition duration-200 mb-4 w-full lg:w-auto">
+            <button
+              onClick={addToCart} // Call addToCart on click
+              className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition duration-200 mb-4 w-full lg:w-auto"
+            >
               Add to Cart
             </button>
           </div>

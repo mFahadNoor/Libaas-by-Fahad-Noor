@@ -2,7 +2,7 @@ import React from 'react';
 import { Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode'; // Ensure correct import for jwt-decode
+import { jwtDecode } from 'jwt-decode'; // Ensure correct import for jwt-decode
 
 const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
   const handleAddToWishlist = async () => {
@@ -41,9 +41,30 @@ const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
     }
   };
 
-  const handleAddToCart = () => {
-    if (onAddToCart) {
-      onAddToCart(product.id); // Call parent handler if provided
+  const handleAddToCart = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error('User not logged in');
+      }
+
+      // Decode the token to get the user ID
+      const decoded = jwtDecode(token);
+      const userId = decoded.user.id;
+
+      // Send the product ID and user ID to the backend
+      const response = await axios.post('http://localhost:5000/api/cart/add', {
+        user: userId,
+        productId: product.id,
+        quantity: 1, // Default quantity to 1
+      });
+
+      console.log(response.data.message); // Log success message
+      if (onAddToCart) {
+        onAddToCart(product.id); // Call parent handler if provided
+      }
+    } catch (err) {
+      console.error('Error adding to cart:', err);
     }
   };
 
@@ -72,7 +93,7 @@ const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
 
       <div className="mt-4 flex flex-col">
         <button
-          onClick={handleAddToCart}
+          onClick={handleAddToCart} // Call handleAddToCart on click
           className="bg-black text-white py-2 px-4 rounded-md mb-2 h-10 hover:bg-gray-800 transition"
         >
           Add to Cart

@@ -2,7 +2,6 @@
 
 const Cart = require('../models/cartModel.js');  // Assuming you have a Cart model
 
-
 // Add product to cart
 const addToCart = async (req, res) => {
   const { user, productId, quantity } = req.body;
@@ -54,36 +53,40 @@ const addToCart = async (req, res) => {
   }
 };
 
-module.exports = { addToCart };
-
-
 // Remove product from cart
 const removeFromCart = async (req, res) => {
   const { user, productId } = req.body;
 
   try {
-    // Find the user's cart
+    // Ensure the user and productId are provided
+    if (!user || !productId) {
+      return res.status(400).json({ success: false, message: "User and productId are required" });
+    }
+
+    // Find the cart associated with the user
     const cart = await Cart.findOne({ user });
 
     if (!cart) {
-      return res.status(404).json({ success: false, message: 'Cart not found' });
+      return res.status(404).json({ success: false, message: "Cart not found for this user" });
     }
 
-    // Find the index of the product in the cart
-    const productIndex = cart.products.findIndex(product => product.productId === productId);
+    // Find the product in the cart and remove it
+    const productIndex = cart.items.findIndex(item => item.product.toString() === productId);
 
     if (productIndex === -1) {
-      return res.status(400).json({ success: false, message: 'Product not in cart' });
+      return res.status(404).json({ success: false, message: "Product not found in cart" });
     }
 
-    // Remove the product
-    cart.products.splice(productIndex, 1);
+    // Remove the item from the cart
+    cart.items.splice(productIndex, 1);
+
+    // Save the updated cart
     await cart.save();
 
-    return res.status(200).json({ success: true, message: 'Product removed from cart' });
-  } catch (error) {
-    console.error('Error removing from cart:', error);
-    return res.status(500).json({ success: false, message: 'Error removing from cart' });
+    res.json({ success: true, message: "Item removed from cart" });
+  } catch (err) {
+    console.error("Error removing item from cart:", err);
+    res.status(500).json({ success: false, message: "Error removing from cart" });
   }
 };
 
@@ -106,8 +109,39 @@ const viewCart = async (req, res) => {
   }
 };
 
+// Clear all items from the cart
+const clearCart = async (req, res) => {
+  const { user } = req.body;  // Assuming the user ID is passed in the body
+
+  try {
+    // Ensure that the user is provided
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'User ID is required' });
+    }
+
+    // Find the user's cart
+    const cart = await Cart.findOne({ user });
+
+    if (!cart) {
+      return res.status(404).json({ success: false, message: 'Cart not found for this user' });
+    }
+
+    // Clear the cart items by setting them to an empty array
+    cart.items = [];
+
+    // Save the updated cart
+    await cart.save();
+
+    res.json({ success: true, message: 'Cart cleared successfully' });
+  } catch (err) {
+    console.error('Error clearing the cart:', err);
+    res.status(500).json({ success: false, message: 'Error clearing the cart' });
+  }
+};
+
 module.exports = {
   addToCart,
   removeFromCart,
   viewCart,
+  clearCart,  // Export the clearCart function
 };
