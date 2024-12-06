@@ -4,12 +4,12 @@ import * as authService from "../services/api";
 import axios from "axios";
 
 const AuthContext = createContext(null);
-// Clear localStorage on app load to reset user data
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const userData = await authService.login(credentials);
       setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
 
       // Redirect based on role
       switch (userData.role) {
@@ -47,21 +48,58 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async (credential) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/google",
+        {
+          token: credential,
+        }
+      );
+      const userData = response.data;
+
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // Redirect based on role
+      switch (userData.role) {
+        case "ADMIN":
+          navigate("/admin");
+          break;
+        case "SELLER":
+          navigate("/seller");
+          break;
+        case "USER":
+          navigate("/customer");
+          break;
+        default:
+          navigate("/customer");
+      }
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || "Google login failed",
+      };
+    }
+  };
+
   const register = async (userData) => {
     try {
       const newUser = await authService.register(userData);
-      const token = newUser.token; // Get the token from the response
+      const token = newUser.token;
       localStorage.setItem("token", token);
       setUser(newUser);
-      // Create cart for customer
+
       if (newUser.role === "CUSTOMER") {
         try {
           await axios.post(
-            "/api/cart", // Replace with your cart creation API endpoint
-            { userId: newUser.id }, // Request body if needed
+            "/api/cart",
+            { userId: newUser.id },
             {
               headers: {
-                Authorization: `Bearer ${token}`, // Send the token as Bearer token in the Authorization header
+                Authorization: `Bearer ${token}`,
               },
             }
           );
@@ -69,7 +107,7 @@ export const AuthProvider = ({ children }) => {
           console.log("couldnt create cart: ", error);
         }
       }
-      // Redirect based on role
+
       switch (newUser.role) {
         case "ADMIN":
           navigate("/admin");
@@ -96,6 +134,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     authService.logout();
     setUser(null);
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
@@ -104,7 +143,9 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, login, register, logout, googleLogin }}
+    >
       {children}
     </AuthContext.Provider>
   );

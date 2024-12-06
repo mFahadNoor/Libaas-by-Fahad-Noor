@@ -1,7 +1,10 @@
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { OAuth2Client } = require("google-auth-library");
 const User = require("../models/userModel.js");
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const register = asyncHandler(async (req, res) => {
   const { fullName, email, password, role } = req.body;
@@ -60,10 +63,46 @@ const login = asyncHandler(async (req, res) => {
   }
 });
 
+const googleAuth = asyncHandler(async (req, res) => {
+  const { token } = req.body;
+
+  const ticket = await googleClient.verifyIdToken({
+    idToken: token,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  const { name, email, picture } = ticket.getPayload();
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    // Create new user if doesn't exist
+    const randomPassword = Math.random().toString(36).slice(-8);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
+    user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: "CUSTOMER",
+      googleId: ticket.getUserId(),
+    });
+  }
+
+  res.json({
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    token: generateToken(user._id),
+  });
+});
+
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
 };
 
-module.exports = { login, register };
+module.exports = { login, register, googleAuth };

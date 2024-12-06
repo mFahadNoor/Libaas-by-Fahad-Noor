@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 const logo = require("../images/logo.png");
 
 function Login() {
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -13,6 +13,41 @@ function Login() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Load Google API
+    const loadGoogleScript = () => {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+
+      script.onload = () => {
+        window.google.accounts.id.initialize({
+          client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+        });
+        window.google.accounts.id.renderButton(
+          document.getElementById("googleButton"),
+          { theme: "outline", size: "large", width: "100%" }
+        );
+      };
+    };
+    loadGoogleScript();
+  }, []);
+
+  const handleGoogleResponse = async (response) => {
+    try {
+      const result = await googleLogin(response.credential);
+      if (!result.success) {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError("Failed to login with Google");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -26,6 +61,7 @@ function Login() {
 
     setLoading(false);
   };
+
   return (
     <div className="min-h-screen min-w-full flex">
       {/* Left Side - Image with Greeting */}
@@ -124,6 +160,19 @@ function Login() {
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
+
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <div id="googleButton" className="w-full"></div>
           </form>
 
           <p className="mt-8 text-center text-sm text-gray-600">
