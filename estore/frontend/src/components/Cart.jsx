@@ -110,12 +110,26 @@ const Cart = () => {
   };
 
   // Handle checkout action
-  const handleCheckout = () => {
-    const cartDetails = cartItems.map(item => 
-      `${item.product.name} (Quantity: ${item.quantity}, Price: $${item.product.price})`
-    ).join('\n');
-
-    alert(`Your Cart:\n${cartDetails}\n\nTotal Cost: $${calculateTotal()}`);
+  const handleCheckout = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      const response = await axios.post('http://localhost:5000/api/orders', {
+        token,
+        orderItems: cartItems.map(item => ({
+          product: item.product._id,
+          quantity: item.quantity
+        }))
+      });
+  
+      if (response.data._id) {
+        await clearCart();
+        alert(`Order placed successfully! Order ID: ${response.data._id}`);
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+      alert("Failed to place order. " + (err.response?.data?.message || "Please try again."));
+    }
   };
 
   if (loading) {
