@@ -113,7 +113,10 @@ function Navbar({ onSearch }) {
                 <Heart size={20} />
               </Link>
               <button className="text-white hover:text-gray-500">
+              <Link to="/cart" className="text-white hover:text-gray-500"> {/* Navigate to Cart */}
                 <ShoppingBag size={20} />
+                </Link>
+
               </button>
             </div>
           </div>

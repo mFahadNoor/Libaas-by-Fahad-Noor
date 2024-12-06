@@ -9,6 +9,7 @@ import CustomerHomePage from "./pages/CustomerHomePage";
 import Product from "./pages/Product";
 import Wishlist from "./pages/Wishlist";
 import NotFound from "./components/ErrorPages/NotFound";
+import Cart from "./components/Cart";
 
 // A wrapper for protected routes
 function ProtectedRoute({ children }) {
@@ -32,6 +33,7 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
           {/* Protected Routes */}
@@ -56,6 +58,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Wishlist />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute>
+                <Cart />
               </ProtectedRoute>
             }
           />

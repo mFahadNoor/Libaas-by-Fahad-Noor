@@ -9,12 +9,18 @@ const searchHistoryRoutes = require('./Routes/searchRoutes.js');
 const authRoutes = require('./Routes/authRoutes.js');
 const wishlistRoutes = require('./Routes/wishlistRoute.js');
 const authMiddleware = require('./Routes/authRoutes.js');
-const cart  = require('./Routes/cartRoutes.js');
+const cartRoutes  = require('./Routes/cartRoutes.js');
 
 // Use search history routes
 
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: 'http://localhost:3000', // Your frontend origin
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 
 // Middleware
 app.use(express.json());
@@ -32,6 +38,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/search', searchHistoryRoutes);
 app.use('/api/auth', authRoutes);
 app.use ('/api/wishlist', wishlistRoutes);
+app.use('/api/cart', cartRoutes)
 
 // Start server
 const PORT = process.env.PORT || 5000;
