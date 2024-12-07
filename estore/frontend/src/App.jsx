@@ -10,6 +10,7 @@ import Product from "./pages/Product";
 import Wishlist from "./pages/Wishlist";
 import NotFound from "./components/ErrorPages/NotFound";
 import Cart from "./components/Cart";
+import UserOrders from "./components/UserOrders";
 
 // A wrapper for protected routes
 function ProtectedRoute({ children }) {
@@ -69,6 +70,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/orders"
+             element={
+              <ProtectedRoute>
+                <UserOrders />
+              </ProtectedRoute>
+            }
+             />
+
 
           {/* Catch-all Route */}
           <Route path="*" element={<NotFound />} />

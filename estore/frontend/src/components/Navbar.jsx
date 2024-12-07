@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingBag, Heart, Search, Menu, X } from 'lucide-react';
+import { ShoppingBag, Heart, Search, Menu, X, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom'; // Import Link
 
-function Navbar({ onSearch }) {
+function Navbar({ onSearch, onSearchVisibilityChange }) {
   const [isSearchVisible, setIsSearchVisible] = useState(false); // State to track search bar visibility
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState(''); // state to hold the search term
@@ -11,7 +11,9 @@ function Navbar({ onSearch }) {
   const searchRef = useRef(null); // Reference to the search bar dropdown
 
   const toggleSearchBar = () => {
-    setIsSearchVisible(!isSearchVisible); // Toggle visibility of search bar
+    const newVisibility = !isSearchVisible;
+    setIsSearchVisible(newVisibility); // Toggle visibility of search bar
+    onSearchVisibilityChange(newVisibility); // Notify parent component
   };
 
   const handleSearchChange = async (event) => {
@@ -59,9 +61,13 @@ function Navbar({ onSearch }) {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex-shrink-0 flex items-center space-x-2">
-            <h2 className="text-l font-bold mt-0.5">LIBAS by Fahad Noor</h2>
-          </div>
+          <button>
+            <Link to="/customer">
+              <div className="flex-shrink-0 flex items-center space-x-2">
+                <h2 className="text-l font-bold mt-0.5">LIBAS by Fahad Noor</h2>
+              </div>
+            </Link>
+          </button>
 
           <div className="flex flex-row">
             {/* Search Bar - Only shows when isSearchVisible is true */}
@@ -93,6 +99,7 @@ function Navbar({ onSearch }) {
                           alt={product.name}
                           className="w-10 h-10 object-cover rounded-md mr-3"
                         />
+                        
                         <div>
                           <p className="text-sm font-medium text-black">{product.name}</p>
                           <p className="text-xs text-gray-600">${product.price}</p>
@@ -116,7 +123,11 @@ function Navbar({ onSearch }) {
               <Link to="/cart" className="text-white hover:text-gray-500"> {/* Navigate to Cart */}
                 <ShoppingBag size={20} />
                 </Link>
-
+              </button>
+              <button className="text-white hover:text-gray-500">
+                <Link to="/orders" className="text-white hover:text-gray-500"> {/* Navigate to Orders */}
+                  <Truck size={20} />
+                </Link>
               </button>
             </div>
           </div>

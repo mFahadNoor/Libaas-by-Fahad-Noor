@@ -4,16 +4,20 @@ import * as authService from "../services/api";
 import axios from "axios";
 
 const AuthContext = createContext(null);
-// Clear localStorage on app load to reset user data
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
   useEffect(() => {
+    // Check if there is a token in localStorage
+    const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-     // setUser(JSON.parse(storedUser));
+
+    if (storedToken && storedUser) {
+      // If token and user exist in localStorage, set them in state
+      setUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, []);
@@ -21,10 +25,11 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const userData = await authService.login(credentials);
-      setUser(userData);
+      setUser(userData); // Set the user state
       const token = userData.token;
-      localStorage.setItem("token", token);
-      console.log(localStorage.getItem("token"), localStorage.getItem("user"));
+      localStorage.setItem("token", token); // Save token to localStorage
+      localStorage.setItem("user", JSON.stringify(userData)); // Save user data to localStorage
+
       // Redirect based on role
       switch (userData.role) {
         case "ADMIN":
@@ -53,11 +58,12 @@ export const AuthProvider = ({ children }) => {
     try {
       const newUser = await authService.register(userData);
       const token = newUser.token; // Get the token from the response
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", newUser);
-      console.log(localStorage.getItem("token"), localStorage.getItem("newUser"));
+      localStorage.setItem("token", token); // Save token to localStorage
+      localStorage.setItem("user", JSON.stringify(newUser)); // Save user data to localStorage
+
       setUser(newUser);
-      // Create cart for customer
+
+      // Create cart for customer if role is "CUSTOMER"
       if (newUser.role === "CUSTOMER") {
         try {
           await axios.post(
@@ -70,9 +76,10 @@ export const AuthProvider = ({ children }) => {
             }
           );
         } catch (error) {
-          console.log("couldnt create cart: ", error);
+          console.log("Couldn't create cart: ", error);
         }
       }
+
       // Redirect based on role
       switch (newUser.role) {
         case "ADMIN":
@@ -99,7 +106,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     authService.logout();
-    setUser(null);
+    localStorage.removeItem("token"); // Remove token from localStorage
+    localStorage.removeItem("user"); // Remove user from localStorage
+    setUser(null); // Reset user state
     navigate("/login");
   };
 

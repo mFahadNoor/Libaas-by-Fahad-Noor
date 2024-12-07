@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar'; 
 import ProductCard from '../components/ProductCard.jsx';
 import Newsletter from '../components/Newsletter.jsx';
@@ -10,9 +10,12 @@ function CustomerHomePage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedGender, setSelectedGender] = useState('all');
   const [selectedBrand, setSelectedBrand] = useState('');
-  const [searchTerm, setSearchTerm] = useState(''); 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [wishlist, setWishlist] = useState([]);
+  const [isSearchVisible, setIsSearchVisible] = useState(false); // Track search bar visibility
 
-  const [wishlist, setWishlist] = useState([]); // State to hold wishlist
+  // Ref for the hero section to enable smooth scrolling
+  const heroSectionRef = useRef(null);
 
   // Fetch products based on filters  
   useEffect(() => {
@@ -29,11 +32,9 @@ function CustomerHomePage() {
         const response = await fetch(apiUrl);
         if (!response.ok) throw new Error('Failed to fetch products');
         const data = await response.json();
-        
-        // If the response doesn't have 'id', map it to have 'id' from '_id'
         const formattedData = data.map(product => ({
           ...product,
-          id: product._id || product.id // Handle if '_id' is used
+          id: product._id || product.id,
         }));
 
         setProducts(formattedData);
@@ -45,10 +46,8 @@ function CustomerHomePage() {
     fetchProducts();
   }, [selectedCategory, selectedGender, selectedBrand, searchTerm]);
 
-  // Function to handle adding to wishlist
   const handleAddToWishlist = (productId) => {
     setWishlist((prevWishlist) => {
-      // Check if the product is already in the wishlist
       if (prevWishlist.includes(productId)) {
         alert('Product already in wishlist');
         return prevWishlist;
@@ -58,24 +57,48 @@ function CustomerHomePage() {
     alert('Product added to wishlist: ' + productId);
   };
 
-  // Function to handle search query
   const handleSearch = (query) => {
-    setSearchTerm(query); 
+    setSearchTerm(query);
   };
 
-  // Function to handle clear search and reset filters
   const handleClearSearch = () => {
-    setSearchTerm(''); // Clear search term
-    setSelectedCategory('all'); // Reset category filter
-    setSelectedGender('all'); // Reset gender filter
-    setSelectedBrand(''); // Reset brand filter
+    setSearchTerm('');
+    setSelectedCategory('all');
+    setSelectedGender('all');
+    setSelectedBrand('');
+  };
+
+  const handleSearchVisibility = (visible) => {
+    setIsSearchVisible(visible);
+
+    // Smooth scroll effect when toggling visibility
+    if (visible && heroSectionRef.current) {
+      heroSectionRef.current.style.opacity = '0';
+      heroSectionRef.current.style.height = '0';
+      heroSectionRef.current.style.overflow = 'hidden';
+      heroSectionRef.current.style.transition = 'opacity 0.5s ease, height 0.5s ease';
+    } else if (!visible && heroSectionRef.current) {
+      heroSectionRef.current.style.display = 'block';
+      setTimeout(() => {
+        heroSectionRef.current.style.opacity = '1';
+        heroSectionRef.current.style.height = '70vh';
+        heroSectionRef.current.style.transition = 'opacity 0.5s ease, height 0.5s ease';
+      }, 0);
+    }
   };
 
   return (
     <>
-      <Navbar onSearch={handleSearch} />
+      <Navbar
+        onSearch={handleSearch}
+        onSearchVisibilityChange={handleSearchVisibility}
+      />
 
-      <div className="relative h-[70vh] bg-cover bg-center" style={{ backgroundImage: `url(${HeroImage})` }}>
+      <div 
+        ref={heroSectionRef}
+        className="relative h-[70vh] bg-cover bg-center" 
+        style={{ backgroundImage: `url(${HeroImage})` }}
+      >
         <div className="absolute inset-0 bg-black/40" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white">
@@ -142,15 +165,14 @@ function CustomerHomePage() {
             </select>
           </div>
 
-        {/* Clear Button */}
-            <div className="mt-7 mb-12 ml-6">
+          <div className="mt-7 mb-12 ml-6">
             <button
-                onClick={handleClearSearch}
-                className="px-6 py-2  text-center bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+              onClick={handleClearSearch}
+              className="px-6 py-2 text-center bg-red-500 text-white rounded-md hover:bg-red-600 transition"
             >
-                Clear Filters
+              Clear Filters
             </button>
-            </div>
+          </div>
         </div>
 
         {/* Display Products */}
@@ -160,7 +182,7 @@ function CustomerHomePage() {
               <ProductCard
                 key={product.id}
                 product={product}
-                onAddToWishlist={handleAddToWishlist} // Pass function to ProductCard
+                onAddToWishlist={handleAddToWishlist}
               />
             ))
           ) : (
