@@ -7,24 +7,15 @@ const Order = require("../models/orderModel");
 const jwt = require('jsonwebtoken');
 
 const createOrder = asyncHandler(async (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ message: "No authorization token" });
-  }
-
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  const userId = decoded.user.id;
-
-  const { orderItems } = req.body;
+  const { user,orderItems } = req.body;
 
   if (!orderItems || orderItems.length === 0) {
-    return res.status(400).json({ message: "No order items" });
+    res.status(400);
+    throw new Error("No order items");
   }
-
   const order = await Order.create({
-    user: userId,
-    orderItems
+    user,
+    orderItems,
   });
 
   res.status(201).json(order);
@@ -52,9 +43,7 @@ const getOrdersByUserId = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
   // Ensure only admins or the user themselves can access this
-  if (req.user.role !== "ADMIN" && req.user._id.toString() !== userId) {
-    return res.status(403).json({ message: "Not authorized to access these orders" });
-  }
+
 
   // Fetch all orders for the specific user
   const orders = await Order.find({ user: userId }).populate("orderItems.product");

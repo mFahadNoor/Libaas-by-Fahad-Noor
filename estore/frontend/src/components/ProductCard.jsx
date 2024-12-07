@@ -2,38 +2,35 @@ import React from 'react';
 import { Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode'; // Ensure correct import for jwt-decode
 
 const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
   const handleAddToWishlist = async () => {
     let userId = '6751b855ec4025be11ec0d48'; // Dummy user ID for testing
 
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        userId = String(decoded.user.id); // Convert to string using String()
-        console.log(`Decoded User ID: ${userId}`);
-        console.log(`Decoded User Name: ${decoded.user.name}`);
-      } catch (error) {
-        console.error("Error decoding token:", error);
-        return; // Exit if token decoding fails
-      }
+    // Get the user object from localStorage
+    const user = JSON.parse(localStorage.getItem('user')); // Assuming user object is stored here
+
+    if (user && user.id) {
+      userId = user.id; // Get the userId from the user object in localStorage
+      console.log(`User ID from localStorage: ${userId}`);
+    } else {
+      console.error('User not logged in or user ID not found in localStorage');
+      return; // Exit if no user ID found
     }
 
     try {
       const response = await axios.post('/api/wishlist/add', {
-        user: userId, // Send the stringified userId
+        user: userId, // Send the userId directly from localStorage
         productId: product.id,
       });
 
       if (response.data.success) {
-        console.log("Product added to wishlist!");
+        console.log('Product added to wishlist!');
       } else {
-        console.error("Failed to add product to wishlist:", response.data.message);
+        console.error('Failed to add product to wishlist:', response.data.message);
       }
     } catch (error) {
-      console.error("Error adding to wishlist:", error);
+      console.error('Error adding to wishlist:', error);
     }
 
     if (onAddToWishlist) {
@@ -43,25 +40,28 @@ const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
 
   const handleAddToCart = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      const user = JSON.parse(localStorage.getItem('user')); // Get user from localStorage
+
+      if (!user || !user.id) {
         throw new Error('User not logged in');
       }
 
-      // Decode the token to get the user ID
-      const decoded = jwtDecode(token);
-      const userId = decoded.user.id;
+      const userId = user.id; // Extract the user ID from the user object in localStorage
 
-      // Send the product ID and user ID to the backend
       const response = await axios.post('http://localhost:5000/api/cart/add', {
         user: userId,
         productId: product.id,
         quantity: 1, // Default quantity to 1
+        
       });
+      
 
       console.log(response.data.message); // Log success message
+      alert('Product added to cart!');
+
       if (onAddToCart) {
         onAddToCart(product.id); // Call parent handler if provided
+        
       }
     } catch (err) {
       console.error('Error adding to cart:', err);

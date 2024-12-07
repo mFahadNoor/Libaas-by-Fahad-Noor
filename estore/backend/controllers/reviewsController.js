@@ -33,13 +33,15 @@ const reviewsController = {
   getReviewsByProduct: async (req, res) => {
     try {
       const { productId } = req.params;
-      const reviews = await Review.findAll({ where: { productId } }); // Use MongoDB query if applicable
+      // Use Mongoose's .find() method for querying the reviews based on the productId
+      const reviews = await Review.find({ productId }); 
       res.status(200).json(reviews);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Error fetching reviews for product.', error: error.message });
     }
   },
+  
 
   // Update a review
   updateReview: async (req, res) => {

@@ -36,7 +36,7 @@ app.use('/api/auth', authRoutes);
 app.use ('/api/wishlist', wishlistRoutes);
 app.use('/api/cart', cart);
 app.use('/api/order', order);
-app.use('/api/review', review);
+app.use('/api/review', review); 
 
 // Start server
 const PORT = process.env.PORT || 5000;

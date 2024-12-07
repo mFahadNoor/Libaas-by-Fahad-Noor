@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 import { Link } from "react-router-dom";
 import Navbar from "./Navbarwithoutsb.jsx";
 import LoadingScreen from "../components/LoadingPage/LoadingPage.jsx";
@@ -19,13 +18,14 @@ const UserOrders = () => {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const token = localStorage.getItem("token");
-                if (!token) {
+                const userData = JSON.parse(localStorage.getItem("user")); // Retrieving user data
+                if (!userData || !userData.id) {
                     throw new Error("User not logged in.");
                 }
 
-                const decoded = jwtDecode(token);
-                const userId = decoded.user.id;
+                const userId = userData.id; // Getting the user ID from local storage
+                const token = userData.token; // Retrieve the token as well, if needed
+
                 const config = {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -71,19 +71,17 @@ const UserOrders = () => {
 
     const submitReview = async () => {
         try {
-            const token = localStorage.getItem("token");
-             if (!token) throw new Error('User not logged in');
-            const decoded = jwtDecode(token);
-            
+            const userData = JSON.parse(localStorage.getItem("user")); // Retrieve user data
+            if (!userData || !userData.id) throw new Error("User not logged in");
+
             const config = {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${userData.token}`,
                 },
-            };       
-           
+            };
 
             const reviewData = {
-                userId:  decoded.user.id,
+                userId: userData.id,
                 productId: reviewProduct._id,
                 review: reviewText,
                 rating: reviewRating,
@@ -136,7 +134,7 @@ const UserOrders = () => {
                                     <td className="py-3 px-4 text-sm text-gray-800">{order.orderItems.length}</td>
                                     <td className="py-3 px-4 text-sm text-gray-800">
                                         <button
-                                            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                                            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
                                             onClick={() => handleViewDetails(order)}
                                         >
                                             View Details
@@ -150,67 +148,68 @@ const UserOrders = () => {
 
                 {isModalOpen && selectedOrder && (
                     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-                                            <div className="bg-white p-6 rounded-lg shadow-lg w-96 h-2/3 flex flex-col">
-                        <h3 className="text-xl font-bold mb-1">Order Details</h3>
-                        <div className="mb-2">
-                            <p className="font-medium text-xs">Order ID: {selectedOrder._id}</p>
-                            <p className="font-medium text-xs  ">
-                                Date: {new Date(selectedOrder.createdAt).toLocaleDateString()}
-                            </p>
-                            <p 
-                            className="font-medium text-sm">    {selectedOrder.status === "DELIVERED" ? (
-                                <span className="text-green-500">{selectedOrder.status}</span>
-                            ) : (
-                                <span className="text-gray-800">{selectedOrder.status}</span>
-                            )}</p>
-                        </div>
-                        
-                        <h4 className="font-semibold mb-2">Order Items:</h4>
-                        <div className="overflow-y-auto flex-1" style={{ maxHeight: "calc(100% - 150px)" }}>
-                            <ul className="mb-4">
-                                {selectedOrder.orderItems.map((item, index) => (
-                                    <li key={index} className="flex items-center space-x-4 mb-2">
-                                        <Link to={`/products/${item.product?._id}`}>
-                                            <img
-                                            src={item.product?.image || "/default-image.png"}
-                                            alt={item.product?.name || "Product"}
-                                            className="h-16 w-16 object-cover rounded-md"
-                                            />
-                                        </Link>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm">{item.product?.name || "Unknown Product"}</span>
-                                            <span className="text-sm">Quantity: {item.quantity}</span>
-                                            <span className="text-sm">Price: ${item.product?.price || "0.00"}</span>
-                                            <span className="text-sm font-semibold">
-                                                Total: ${(item.product?.price * item.quantity).toFixed(2) || "0.00"}
-                                            </span>
-                                            {selectedOrder.status === "DELIVERED" && (
-                                              <button
-                                                className="bg-gray-500 text-white px-2 py-1 mt-2 rounded-lg hover:bg-gray-400 text-xs"
-                                                onClick={() => handleWriteReview(item.product)}
-                                              >
-                                                Write Review
-                                              </button>
-                                            )}
-                                        </div>
-                                    </li>
+                        <div className="bg-white p-6 rounded-lg shadow-lg w-96 h-2/3 flex flex-col">
+                            <h3 className="text-xl font-bold mb-1">Order Details</h3>
+                            <div className="mb-2">
+                                <p className="font-medium text-xs">Order ID: {selectedOrder._id}</p>
+                                <p className="font-medium text-xs">
+                                    Date: {new Date(selectedOrder.createdAt).toLocaleDateString()}
+                                </p>
+                                <p className="font-medium text-sm">
+                                    {selectedOrder.status === "DELIVERED" ? (
+                                        <span className="text-green-500">{selectedOrder.status}</span>
+                                    ) : (
+                                        <span className="text-gray-800">{selectedOrder.status}</span>
+                                    )}
+                                </p>
+                            </div>
+
+                            <h4 className="font-semibold mb-2">Order Items:</h4>
+                            <div className="overflow-y-auto flex-1" style={{ maxHeight: "calc(100% - 150px)" }}>
+                                <ul className="mb-4">
+                                    {selectedOrder.orderItems.map((item, index) => (
+                                        <li key={index} className="flex items-center space-x-4 mb-2">
+                                            <Link to={`/products/${item.product?._id}`}>
+                                                <img
+                                                    src={item.product?.image || "/default-image.png"}
+                                                    alt={item.product?.name || "Product"}
+                                                    className="h-16 w-16 object-cover rounded-md"
+                                                />
+                                            </Link>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm">{item.product?.name || "Unknown Product"}</span>
+                                                <span className="text-sm">Quantity: {item.quantity}</span>
+                                                <span className="text-sm">Price: ${item.product?.price || "0.00"}</span>
+                                                <span className="text-sm font-semibold">
+                                                    Total: ${(item.product?.price * item.quantity).toFixed(2) || "0.00"}
+                                                </span>
+                                                {selectedOrder.status === "DELIVERED" && (
+                                                    <button
+                                                        className="bg-gray-500 text-white px-2 py-1 mt-2 rounded-lg hover:bg-gray-400 text-xs"
+                                                        onClick={() => handleWriteReview(item.product)}
+                                                    >
+                                                        Write Review
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </li>
                                     ))}
                                 </ul>
                             </div>
-                            
+
                             <button
-                            className="bg-black mt-1 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-                            onClick={closeModal}
+                                className="bg-black mt-1 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+                                onClick={closeModal}
                             >
-                            Close
-                        </button>
-                    </div>
+                                Close
+                            </button>
+                        </div>
                     </div>
                 )}
 
                 {isReviewModalOpen && (
-                                 <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-                                            <div className="bg-white p-6 rounded-lg shadow-lg w-96 h-2/3 flex flex-col">
+                    <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg w-96 h-2/3 flex flex-col">
                             <h3 className="text-xl font-bold mb-4">Write a Review</h3>
                             <textarea
                                 className="w-full p-2 border rounded mb-4"
