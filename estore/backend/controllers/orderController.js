@@ -47,10 +47,38 @@ const getAllOrders = asyncHandler(async (req, res) => {
   res.json(orders);
 });
 
+
+const getOrdersByUserId = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  // Ensure only admins or the user themselves can access this
+  if (req.user.role !== "ADMIN" && req.user._id.toString() !== userId) {
+    return res.status(403).json({ message: "Not authorized to access these orders" });
+  }
+
+  // Fetch all orders for the specific user
+  const orders = await Order.find({ user: userId }).populate("orderItems.product");
+
+  if (!orders || orders.length === 0) {
+    return res.status(404).json({ message: "No orders found for this user" });
+  }
+
+  res.json(orders);
+});
+
+module.exports = {
+  getOrdersByUserId,
+};
+
+
 // @desc    Get order by ID
 // @route   GET /api/orders/:id
 // @access  Private
 const getOrderById = asyncHandler(async (req, res) => {
+  if (!req.user || !req.user._id) {
+    return res.status(401).json({ message: "Not authorized" });
+  }
+
   const order = await Order.findById(req.params.id).populate(
     "orderItems.product"
   );
@@ -66,11 +94,12 @@ const getOrderById = asyncHandler(async (req, res) => {
     req.user.role !== "ADMIN"
   ) {
     res.status(403);
-    throw new Error("Not authorized");
+    throw new Error("Not authorized to access this order");
   }
 
   res.json(order);
 });
+
 
 // @desc    Update order status
 // @route   PUT /api/orders/:id/status
@@ -95,4 +124,5 @@ module.exports = {
   getOrderById,
   updateOrderStatus,
   getAllOrders,
+  getOrdersByUserId,
 };

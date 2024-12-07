@@ -6,12 +6,13 @@ const {
   getOrderById,
   updateOrderStatus,
   getAllOrders,
-} = require("../controllers/orderController.js");
+  getOrdersByUserId} = require("../controllers/orderController.js");
 const { protect, authorize } = require("../middleware/authMiddleware");
 
 router.route("/").post( createOrder).get(getMyOrders);
 router.route("/all").get(protect, authorize("ADMIN"), getAllOrders);
-router.route("/:id").get(protect, getOrderById);
+router.get('/:id', protect, getOrderById);
+router.get("/user/:userId", protect, getOrdersByUserId);
 
 router
   .route("/:id/status")
