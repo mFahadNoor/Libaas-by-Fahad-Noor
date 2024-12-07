@@ -1,24 +1,48 @@
 const asyncHandler = require("express-async-handler");
 const Order = require("../models/orderModel");
+const sendEmail = require("../config/mailgun");
+const postmark = require("postmark");
 
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private
 const jwt = require('jsonwebtoken');
+const client = new postmark.ServerClient("e31acd64-1069-4eef-ad00-896377b92059");
 
 const createOrder = asyncHandler(async (req, res) => {
-  const { user,orderItems } = req.body;
+  const { user, orderItems } = req.body;
 
   if (!orderItems || orderItems.length === 0) {
     res.status(400);
     throw new Error("No order items");
   }
+
   const order = await Order.create({
     user,
     orderItems,
   });
 
   res.status(201).json(order);
+
+  // Email sending part
+  const userEmail = "abdullahjamil2003y@gmail.com"; // Assuming the email is part of the logged-in user object
+  const subject = "Order Confirmation";
+  const body = `Thank you for your order! Your order has been confirmed. Order ID: ${order._id} ` ;
+
+  // Call the function to send email using Postmark
+  client.sendEmail({
+    From: "i222435@nu.edu.pk", // Replace with your verified email
+    To: userEmail,
+    Subject: subject,
+    TextBody: body,
+    HtmlBody: `<html><body><h1>${body}</h1></body></html>`,
+  }, (error, result) => {
+    if (error) {
+      console.error("Error sending email:", error);
+    } else {
+      console.log("Email sent successfully:", result);
+    }
+  });
 });
 
 // @desc    Get user orders
@@ -29,6 +53,12 @@ const getMyOrders = asyncHandler(async (req, res) => {
     "orderItems.product"
   );
   res.json(orders);
+  const userEmail = "abdullahjamil2003y@gmail.com"; // Assuming the email is part of the logged-in user object
+  const subject = "Order Confirmation";
+  const body = `Thank you for your order! Your order has been confirmed. Order ID: ${order._id}`;
+  
+  // Call the function to send email
+  sendEmail(userEmail, subject, body);
 });
 
 const getAllOrders = asyncHandler(async (req, res) => {
