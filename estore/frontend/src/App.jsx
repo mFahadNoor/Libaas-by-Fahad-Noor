@@ -11,6 +11,7 @@ import Wishlist from "./components/Wishlist";
 import NotFound from "./components/ErrorPages/NotFound";
 import Cart from "./components/Cart";
 import UserOrders from "./components/UserOrders";
+import Review from "./components/Reviews";
 
 // A wrapper for protected routes
 function ProtectedRoute({ children }) {
@@ -59,6 +60,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Wishlist />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reviews"
+            element={
+              <ProtectedRoute>
+                <Review />
               </ProtectedRoute>
             }
           />

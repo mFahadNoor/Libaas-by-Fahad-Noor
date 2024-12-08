@@ -139,9 +139,48 @@ const clearCart = async (req, res) => {
   }
 };
 
+// Update product quantity in cart
+const updateCart = async (req, res) => {
+  const { user, productId, quantity } = req.body;
+
+  // Ensure that the quantity is a valid number
+  const validQuantity = Number(quantity);
+  if (isNaN(validQuantity) || validQuantity <= 0) {
+    return res.status(400).json({ success: false, message: 'Invalid quantity' });
+  }
+
+  try {
+    // Find the user's cart
+    const cart = await Cart.findOne({ user });
+
+    if (!cart) {
+      return res.status(404).json({ success: false, message: "Cart not found for this user" });
+    }
+
+    // Find the product in the cart
+    const productIndex = cart.items.findIndex(item => item.product.toString() === productId);
+
+    if (productIndex === -1) {
+      return res.status(404).json({ success: false, message: "Product not found in cart" });
+    }
+
+    // Update the product's quantity
+    cart.items[productIndex].quantity = validQuantity;
+
+    // Save the updated cart
+    await cart.save();
+
+    res.status(200).json({ success: true, message: "Cart updated successfully" });
+  } catch (err) {
+    console.error("Error updating cart:", err);
+    res.status(500).json({ success: false, message: "Error updating cart" });
+  }
+};
+
 module.exports = {
   addToCart,
   removeFromCart,
   viewCart,
-  clearCart,  // Export the clearCart function
+  clearCart,
+  updateCart,  // Export the updateCart function
 };

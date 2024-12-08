@@ -1,7 +1,9 @@
 const asyncHandler = require("express-async-handler");
 const Order = require("../models/orderModel");
+const User = require("../models/userModel");
 const sendEmail = require("../config/mailgun");
 const postmark = require("postmark");
+const Product = require("../models/productModel"); // Ensure you import the Product model
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -17,33 +19,70 @@ const createOrder = asyncHandler(async (req, res) => {
     throw new Error("No order items");
   }
 
-  const order = await Order.create({
-    user,
-    orderItems,
-  });
+  // Find the user by ID to get their email
+  const userRecord = await User.findById(user);
+  if (!userRecord) {
+    res.status(404);
+    throw new Error("User not found");
+  }
 
+  // Create the order
+  const order = await Order.create({ user, orderItems });
   res.status(201).json(order);
 
-  // Email sending part
-  const userEmail = "abdullahjamil2003y@gmail.com"; // Assuming the email is part of the logged-in user object
+  // Send order confirmation email
+  const userEmail = userRecord.email;
   const subject = "Order Confirmation";
-  const body = `Thank you for your order! Your order has been confirmed. Order ID: ${order._id} ` ;
-
-  // Call the function to send email using Postmark
+  const body = `Thank you for your order! Your order has been confirmed. Order ID: ${order._id}`;
   client.sendEmail({
-    From: "i222435@nu.edu.pk", // Replace with your verified email
+    From: "i222435@nu.edu.pk",
     To: userEmail,
     Subject: subject,
     TextBody: body,
     HtmlBody: `<html><body><h1>${body}</h1></body></html>`,
-  }, (error, result) => {
+  }, (error) => {
     if (error) {
       console.error("Error sending email:", error);
-    } else {
-      console.log("Email sent successfully:", result);
     }
   });
+
+  // Process stock updates and notify users if a product goes out of stock
+  for (const item of orderItems) {
+    const product = await Product.findById(item.product); // Fetch the product
+    if (!product) continue;
+
+    product.stock -= item.quantity; // Update stock
+    if (product.stock <= 0) {
+      product.stock = 0; // Ensure stock does not go negative
+      await product.save();
+
+      // Notify users with this product in their wishlist
+      const usersToNotify = await User.find({ wishlist: product._id });
+      if (usersToNotify.length > 0) {
+        const emailPromises = usersToNotify.map((user) => {
+          const emailBody = `
+            <h1>Product Out of Stock</h1>
+            <p>The product "${product.name}" is now out of stock. We will notify you if it becomes available again.</p>
+          `;
+          return client.sendEmail({
+            From: "i222435@nu.edu.pk",
+            To: user.email,
+            Subject: `Product Out of Stock: ${product.name}`,
+            TextBody: `The product "${product.name}" is now out of stock.`,
+            HtmlBody: emailBody,
+          });
+        });
+
+        await Promise.all(emailPromises); // Send all emails concurrently
+        console.log(`Notification emails sent for product: ${product.name}`);
+      }
+    } else {
+      await product.save(); // Save changes if stock is not zero
+    }
+  }
 });
+
+
 
 // @desc    Get user orders
 // @route   GET /api/orders

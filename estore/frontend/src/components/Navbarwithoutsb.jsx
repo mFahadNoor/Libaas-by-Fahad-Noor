@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingBag, Heart, Menu, X, Truck } from 'lucide-react';
+import { ShoppingBag, Heart, Menu, X, Truck, Edit } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 function Navbar() {
@@ -27,6 +27,9 @@ function Navbar() {
             <Link to="/orders" className="text-white hover:text-gray-500">
               <Truck size={20} />
             </Link>
+                <Link to="/reviews" className="text-white hover:text-gray-500"> {/* Navigate to Orders */}
+                  <Edit size={20} />
+                </Link>
           </div>
 
           {/* Mobile menu button */}

@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingBag, Heart, Search, Menu, X, Truck } from 'lucide-react';
+import { ShoppingBag, Heart, Search, Menu, X, Truck,Edit, User } from 'lucide-react';
 import { Link } from 'react-router-dom'; // Import Link
+import Modal from './Modal'; // Import Modal component
+
 
 function Navbar({ onSearch, onSearchVisibilityChange }) {
   const [isSearchVisible, setIsSearchVisible] = useState(false); // State to track search bar visibility
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState(''); // state to hold the search term
   const [searchResults, setSearchResults] = useState([]); // state to hold search results
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to handle modal visibility
 
   const searchRef = useRef(null); // Reference to the search bar dropdown
+  const user = JSON.parse(localStorage.getItem('user')); // Get user from localStorage
 
   const toggleSearchBar = () => {
     const newVisibility = !isSearchVisible;
@@ -113,6 +117,15 @@ function Navbar({ onSearch, onSearchVisibilityChange }) {
 
             {/* Icons */}
             <div className="hidden md:flex items-center space-x-6">
+              <div className='text-sm flex'><p>Welcome back,</p>
+              <Link to="/profile" className="flex text-white ml-2 hover:text-gray-500"  
+              onClick={() => setIsModalOpen(true)} // Open the modal when the user name is clicked
+              >
+              
+                {user && <span>{user.name}</span>}
+                <User size={20} />
+              </Link>
+              </div>
               <button className="text-white hover:text-gray-500" onClick={toggleSearchBar}>
                 <Search size={20} />
               </button>
@@ -127,6 +140,11 @@ function Navbar({ onSearch, onSearchVisibilityChange }) {
               <button className="text-white hover:text-gray-500">
                 <Link to="/orders" className="text-white hover:text-gray-500"> {/* Navigate to Orders */}
                   <Truck size={20} />
+                </Link>
+              </button>
+              <button className="text-white hover:text-gray-500">
+                <Link to="/reviews" className="text-white hover:text-gray-500"> {/* Navigate to Orders */}
+                  <Edit size={20} />
                 </Link>
               </button>
             </div>
@@ -162,6 +180,7 @@ function Navbar({ onSearch, onSearchVisibilityChange }) {
           </div>
         </div>
       )}
+      
     </nav>
   );
 }

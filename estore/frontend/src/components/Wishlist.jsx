@@ -71,7 +71,6 @@ function Wishlist() {
   }
 
   if (error) {
-    return <p className="text-center text-red-500">{error}</p>;
   }
 
   return (
@@ -95,8 +94,18 @@ function Wishlist() {
                   </div>
                   <div className="p-4 flex flex-col flex-grow">
                     <h2 className="text-lg font-semibold text-gray-800">{item.name}</h2>
-                    <p className="text-gray-600 mb-4">${item.price}</p>
-                    <button
+                    <p className="text-gray-600">${item.price}</p>
+                    <p
+                    className={`text-gray-500 text-sm mb-4 ${
+                      item.stock === 0
+                      ? "text-red-500" // If quantity is 0, make the text red
+                      : item.stock < 5
+                      ? "text-yellow-500" // If quantity is less than 5, make the text yellow
+                      : ""
+                    }`}
+                    >
+                    Items left in Stock: {item.stock}
+                  </p>                     <button
                       onClick={() => addToCart(item._id)}
                       className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-600 transition mt-auto"
                     >

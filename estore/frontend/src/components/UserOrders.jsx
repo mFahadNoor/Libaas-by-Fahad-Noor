@@ -97,7 +97,7 @@ const UserOrders = () => {
     };
 
     if (loading) return <LoadingScreen />;
-    if (error) return <div>{error}</div>;
+    // if (error) return <div>{error}</div>;
 
     return (
         <div>
@@ -110,7 +110,7 @@ const UserOrders = () => {
                     <table className="min-w-full table-auto bg-white shadow-md rounded-lg">
                         <thead>
                             <tr className="bg-gray-200">
-                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">Order ID</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">  ID</th>
                                 <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">Date</th>
                                 <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">Status</th>
                                 <th className="py-3 px-4 text-left text-sm font-medium text-gray-700">Total Items</th>

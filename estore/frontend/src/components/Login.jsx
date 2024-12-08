@@ -13,6 +13,8 @@ function Login() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -26,6 +28,42 @@ function Login() {
 
     setLoading(false);
   };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotPasswordMessage(""); // Reset the message
+
+    if (!formData.email) {
+      setForgotPasswordMessage("Please enter your email.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Send a request to the backend to handle the forgot password
+      const response = await fetch("http://localhost:5000/api/auth/forgetpassword", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setForgotPasswordMessage("A new password has been sent to your email.");
+      } else {
+        setForgotPasswordMessage(data.message || "An error occurred. Please try again.");
+      }
+    } catch (error) {
+      setForgotPasswordMessage("Error: Could not send request.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen min-w-full flex">
       {/* Left Side - Image with Greeting */}
@@ -36,7 +74,6 @@ function Login() {
           alt="Fashion"
           className="absolute inset-0 w-full h-full object-cover filter blur-sm brightness-75"
         />
-
         <div className="relative z-20 p-12 flex flex-col justify-center align-center w-full">
           <img
             src={logo}
@@ -66,7 +103,15 @@ function Login() {
               {error}
             </div>
           )}
-
+          {forgotPasswordMessage && (
+            <div
+              className={`mb-4 p-4 ${
+                forgotPasswordMessage.includes("sent") ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+              } border border-gray-300 rounded-lg`}
+            >
+              {forgotPasswordMessage}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -110,9 +155,13 @@ function Login() {
             </div>
 
             <div className="flex items-center justify-between">
-              <a href="#" className="text-sm text-black hover:underline">
+              <button
+                onClick={handleForgotPassword}
+                type="button"
+                className="text-sm text-black hover:underline"
+              >
                 Forgot password?
-              </a>
+              </button>
             </div>
 
             <button

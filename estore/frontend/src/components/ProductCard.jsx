@@ -89,6 +89,7 @@ const ProductCard = ({ product, onAddToWishlist, onAddToCart }) => {
       <div className="mt-4">
         <h3 className="text-lg font-medium text-gray-900">{product.name}</h3>
         <p className="mt-1 text-gray-600">${product.price.toFixed(2)}</p>
+        <p className="mt-1 text-gray-600">{product.stock+" items left in stock"}</p>
       </div>
 
       <div className="mt-4 flex flex-col">

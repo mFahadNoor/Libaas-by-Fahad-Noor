@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema(
     },
     brand: {
       type: String,
-      required: [true, "Please add a brand"],
+      // required: [true, "Please add a brand"],
     },
     price: {
       type: Number,
@@ -24,9 +24,15 @@ const productSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ["MALE", "FEMALE", "UNISEX"],
+      enum: ["MALE", "FEMALE", "UNISEX","male","female","unisex"],
       default: "UNISEX",
     },
+    stock: {
+       type: Number,
+        required: true
+
+     },
+
   },
   {
     timestamps: true,

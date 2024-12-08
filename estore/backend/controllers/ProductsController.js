@@ -58,3 +58,35 @@ exports.addProducts = async (req, res) => {
     res.status(500).json({ message: 'Error adding product', error });
   }
 };
+
+
+// Update the product quantity
+exports.updateProductQuantity = async (req, res) => {
+  try {
+    const { id } = req.params; // Extract product ID from route parameters
+    const { stock } = req.body; // Extract quantity from request body
+
+    // Check if quantity is a valid number
+    if (typeof stock !== 'number' || stock < 0) {
+      return res.status(400).json({ error: 'Invalid quantity value' });
+    }
+
+    // Find the product by ID and update its quantity
+    const product = await Product.findByIdAndUpdate(
+      id,
+      { $set: { stock: stock } }, // Update the quantity field
+      { new: true } // Return the updated product
+    );
+
+    // If the product does not exist, return a 404 error
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Return the updated product as a JSON response
+    res.status(200).json(product);
+  } catch (err) {
+    res.status(500).json({ error: 'Error updating product quantity', details: err });
+  }
+};
+
