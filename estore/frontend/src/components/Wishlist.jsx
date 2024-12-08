@@ -71,6 +71,7 @@ function Wishlist() {
   }
 
   if (error) {
+    return <div className="text-center text-red-500">{error}</div>;
   }
 
   return (
@@ -82,30 +83,35 @@ function Wishlist() {
           <p className="text-center text-gray-600">Your wishlist is empty!</p>
         ) : (
           <div>
-            <h1 className="text-2xl font-bold text-center text-gray-800">Wishlist</h1>
-            <div className="grid grid-cols-4 mx-20">
+            <h1 className="text-2xl font-bold text-center text-gray-800 mb-8">Wishlist</h1>
+            {/* Grid layout: 1 column for small screens, 2 for medium, 4 for large screens */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mx-auto">
               {wishlist.map((item) => (
-                <div key={item._id} className="bg-white shadow-md rounded-lg overflow-hidden flex flex-col m-4">
-                  <div className="h-96 relative">
+                <div key={item._id} className="bg-white shadow-md rounded-lg overflow-hidden flex flex-col">
+                  <div className="relative h-96">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                    <button onClick={() => removeFromWishlist(item._id)}>
-                      <Trash className="absolute top-2 right-2 inline-block" />
+                    <button
+                      onClick={() => removeFromWishlist(item._id)}
+                      className="absolute top-2 right-2 text-white bg-gray-700 p-2 rounded-full hover:bg-red-500"
+                    >
+                      <Trash size={20} />
                     </button>
                   </div>
                   <div className="p-4 flex flex-col flex-grow">
-                    <h2 className="text-lg font-semibold text-gray-800">{item.name}</h2>
+                    <h2 className="text-lg font-semibold text-gray-800 truncate">{item.name}</h2>
                     <p className="text-gray-600">${item.price}</p>
                     <p
-                    className={`text-gray-500 text-sm mb-4 ${
-                      item.stock === 0
-                      ? "text-red-500" // If quantity is 0, make the text red
-                      : item.stock < 5
-                      ? "text-yellow-500" // If quantity is less than 5, make the text yellow
-                      : ""
-                    }`}
+                      className={`text-gray-500 text-sm mb-4 ${
+                        item.stock === 0
+                          ? 'text-red-500' // If quantity is 0, make the text red
+                          : item.stock < 5
+                          ? 'text-yellow-500' // If quantity is less than 5, make the text yellow
+                          : ''
+                      }`}
                     >
-                    Items left in Stock: {item.stock}
-                  </p>                     <button
+                      Items left in Stock: {item.stock}
+                    </p>
+                    <button
                       onClick={() => addToCart(item._id)}
                       className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-600 transition mt-auto"
                     >

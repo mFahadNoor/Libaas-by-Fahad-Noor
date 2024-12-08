@@ -57,6 +57,9 @@ function Navbar() {
             <Link to="/orders" className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-gray-700">
               Orders
             </Link>
+            <Link to="/reviews" className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-gray-700">
+              Reviews
+            </Link>
           </div>
         </div>
       )}
