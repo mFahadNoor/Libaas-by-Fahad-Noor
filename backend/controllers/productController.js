@@ -53,8 +53,6 @@ const getProductById = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 const updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
-  console.log(product);
-
   if (!product) {
     res.status(404);
     throw new Error("Product not found");
@@ -80,9 +78,23 @@ const deleteProduct = asyncHandler(async (req, res) => {
     throw new Error("Product not found");
   }
 
-  await product.remove();
+  await product.deleteOne();
   res.json({ message: "Product removed" });
 });
+
+const bulkAdd = async (req, res) => {
+  try {
+    const { products } = req.body;
+    if (!Array.isArray(products)) {
+      return res.status(400).json({ message: "Invalid data format" });
+    }
+    const createdProducts = await Product.insertMany(products);
+    res.status(201).json(createdProducts);
+  } catch (error) {
+    console.error("Bulk upload error:", error);
+    res.status(500).json({ message: "Server error during bulk upload" });
+  }
+};
 
 module.exports = {
   createProduct,
@@ -90,4 +102,5 @@ module.exports = {
   getProductById,
   updateProduct,
   deleteProduct,
+  bulkAdd,
 };

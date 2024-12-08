@@ -23,7 +23,6 @@ function Dashboard() {
           },
         }
       );
-      console.log("This shit", response.data);
       setStats(response.data);
     } catch (error) {
       console.error("Error fetching dashboard stats", error);

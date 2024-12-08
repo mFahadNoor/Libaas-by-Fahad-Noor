@@ -131,7 +131,7 @@ function OrderManagement() {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm overflow-auto">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
